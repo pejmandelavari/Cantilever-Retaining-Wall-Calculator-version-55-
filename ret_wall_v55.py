@@ -6,6 +6,22 @@ import math
 import numpy as np
 import pandas as pd
 import streamlit as st
+
+st.set_page_config(
+    page_title="Cantilever Retaining Wall Calculator",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+st.markdown("""
+<style>
+#MainMenu {visibility: hidden;}
+header {visibility: hidden;}
+footer {visibility: hidden;}
+button {visibility: hidden;}
+</style>
+""", unsafe_allow_html=True)
+
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 
