@@ -478,7 +478,7 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True) 
 
-    with st.sidebar:
+with st.sidebar:
         st.header("Inputs")
         h_stem = st.number_input("h_stem (m)", value=7.0, min_value=0.1, step=0.1)
         t_top  = st.number_input("t_top (m)", value=0.4, min_value=0.05, step=0.05)
