@@ -48,6 +48,52 @@ div[data-testid="stDeployButton"] {display: none !important;}
 }
 </style>
 """, unsafe_allow_html=True)
+import streamlit.components.v1 as components
+
+components.html("""
+<script>
+(function () {
+
+  // فقط روی موبایل
+  if (!window.matchMedia("(max-width: 768px)").matches) return;
+
+  function removeFABs() {
+    document.querySelectorAll('button, div').forEach(el => {
+      const style = window.getComputedStyle(el);
+
+      // فقط المان‌های شناور
+      if (style.position !== 'fixed') return;
+
+      const rect = el.getBoundingClientRect();
+
+      // گوشه پایین صفحه
+      const nearBottom = rect.top > window.innerHeight * 0.6;
+      const nearRight  = rect.left > window.innerWidth * 0.5;
+
+      // اندازه دکمه‌های FAB
+      const sizeOK = rect.width >= 40 && rect.width <= 90 &&
+                     rect.height >= 40 && rect.height <= 90;
+
+      // آیکون SVG ( + یا 👑 )
+      const hasSVG = el.querySelector && el.querySelector('svg');
+
+      if (nearBottom && nearRight && sizeOK && hasSVG) {
+        el.style.display = 'none';
+      }
+    });
+  }
+
+  // چندبار اجرا چون Streamlit بعداً دوباره inject می‌کند
+  let tries = 0;
+  const interval = setInterval(() => {
+    removeFABs();
+    tries++;
+    if (tries > 25) clearInterval(interval);
+  }, 400);
+
+})();
+</script>
+""", height=0)
 
 # ---- ادامه کد اپ ----
 
