@@ -185,6 +185,12 @@ components.html("""
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
+from matplotlib.patches import Patch
+
+# --- Schematic colors ---
+CONCRETE_COLOR = "#B0B0B0"  # concrete gray
+SOIL_BACK_COLOR = "#E6D3A3"  # soil (backfill)
+SOIL_FRONT_COLOR = "#D2B48C" # soil (front cover)
 
 from engine_locked import compute, rad
 
@@ -229,6 +235,8 @@ def draw_schematic_clean(res, mode="simple", show_pressures=True, show_dims=True
     # -------------------------
     # Footing
     footing = np.array([[0,0],[B,0],[B,t_f],[0,t_f]])
+    # Filled concrete footing + outline
+    ax.add_patch(Polygon(footing, closed=True, fill=True, facecolor=CONCRETE_COLOR, edgecolor="none", zorder=4))
     ax.add_patch(Polygon(footing, closed=True, fill=False, linewidth=2.8, edgecolor="black", zorder=5))
 
     # Stem: front face vertical at x=L_toe; back face sloped
@@ -239,6 +247,8 @@ def draw_schematic_clean(res, mode="simple", show_pressures=True, show_dims=True
         [x_front+t_top, t_f+h],
         [x_front+t_bot, t_f],
     ])
+    # Filled concrete stem + outline
+    ax.add_patch(Polygon(stem, closed=True, fill=True, facecolor=CONCRETE_COLOR, edgecolor="none", zorder=5))
     ax.add_patch(Polygon(stem, closed=True, fill=False, linewidth=2.8, edgecolor="black", zorder=6))
 
     # Back face endpoints (for soil intersection)
@@ -267,12 +277,12 @@ def draw_schematic_clean(res, mode="simple", show_pressures=True, show_dims=True
         [B, H],
         [x_int, y_int],
     ])
-    ax.add_patch(Polygon(soil_poly, closed=True, facecolor="#D6EAF8", edgecolor="none", alpha=0.60, zorder=1))
+    ax.add_patch(Polygon(soil_poly, closed=True, facecolor=SOIL_BACK_COLOR, edgecolor="none", alpha=0.70, zorder=1))
 
     # Front soil cover on toe (if any)
     if t_cover_front > 1e-9:
         toe_soil = np.array([[0,t_f],[L_toe,t_f],[L_toe,t_f+t_cover_front],[0,t_f+t_cover_front]])
-        ax.add_patch(Polygon(toe_soil, closed=True, facecolor="#D6EAF8", edgecolor="none", alpha=0.60, zorder=1))
+        ax.add_patch(Polygon(toe_soil, closed=True, facecolor=SOIL_FRONT_COLOR, edgecolor="none", alpha=0.70, zorder=1))
 
     # -------------------------
     # Pressure shapes (contrast)
@@ -369,6 +379,22 @@ def draw_schematic_clean(res, mode="simple", show_pressures=True, show_dims=True
         ax.text(0.02*B, H+0.25, f"Ka={res['Ka']:.4f}  Kp={res['Kp_full']:.3f}  Kp_reduced={res['Kp_reduced']:.3f}", fontsize=10)
         ax.text(0.02*B, H+0.06, f"x_R={x_R:.3f} m  e_base={e_base:.3f} m  (B/6={kern:.3f})", fontsize=10)
         ax.text(0.02*B, H-0.13, f"σmax={res['sigma_max']:.1f} kPa  σmin={res['sigma_min']:.1f} kPa  b'={b_contact:.3f} m", fontsize=10)
+
+
+    # -------------------------
+    # Legend
+    # -------------------------
+    legend_items = [
+        Patch(facecolor=CONCRETE_COLOR, edgecolor="black", label="Concrete"),
+        Patch(facecolor=SOIL_BACK_COLOR, edgecolor="none", alpha=0.70, label="Soil"),
+    ]
+    if show_pressures:
+        legend_items += [
+            Patch(facecolor="#F5B041", edgecolor="#B9770E", alpha=0.85, label="Pa"),
+            Patch(facecolor="#58D68D", edgecolor="#1D8348", alpha=0.85, label="Pp"),
+            Patch(facecolor="#A855F7", edgecolor="#6D28D9", alpha=0.20, label="Bearing"),
+        ]
+    ax.legend(handles=legend_items, loc="upper left", fontsize=8, frameon=True, framealpha=0.9)
 
     # view
     ax.set_aspect("equal", adjustable="box")
