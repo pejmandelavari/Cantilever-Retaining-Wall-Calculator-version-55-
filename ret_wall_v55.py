@@ -22,22 +22,35 @@ def _round_df_3(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 def st_scrollable_table(df: pd.DataFrame, *, height_px: int = 320):
-    """Render a horizontally-scrollable table (mobile-friendly) without Streamlit dataframe toolbars."""
+    """Render a horizontally-scrollable table (mobile-friendly) without Streamlit dataframe toolbars.
+
+    Styling is handled via CSS (centered cells, colored header, zebra striping).
+    """
     if df is None:
         st.info("No table to display.")
         return
+
     df2 = _round_df_3(df)
-    html = df2.to_html(index=False, escape=False, float_format=lambda x: f"{x:.3f}")
+
+    html = df2.to_html(
+        index=False,
+        escape=False,
+        float_format=lambda x: f"{x:.3f}",
+        classes="rw-table",
+        border=0,
+    )
+
     st.markdown(
         f'''
-        <div style="width:100%; overflow-x:auto; overflow-y:auto; max-height:{height_px}px; border:1px solid rgba(49,51,63,0.2); border-radius:8px;">
-          <div style="min-width:max-content; padding:6px 8px;">
+        <div class="rw-table-wrap" style="max-height:{height_px}px;">
+          <div class="rw-table-inner">
             {html}
           </div>
         </div>
         ''',
         unsafe_allow_html=True
     )
+
 
 st.set_page_config(
     page_title="Your App",
@@ -50,6 +63,43 @@ st.markdown("""
 /* Hide per-element toolbar icons (download/search/fullscreen) */
 div[data-testid="stElementToolbar"] {display: none !important;}
 div.modebar {display: none !important;}
+
+/* ===== Custom tables: centered + colored header + zebra + mobile horizontal scroll ===== */
+.rw-table-wrap{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:auto;
+  border:1px solid rgba(49,51,63,0.20);
+  border-radius:10px;
+}
+.rw-table-inner{
+  min-width:max-content;
+  padding:6px 8px;
+}
+table.rw-table{
+  border-collapse:collapse;
+  width:100%;
+  font-size:14px;
+}
+table.rw-table thead th{
+  background:#2f6fa5;
+  color:#ffffff;
+  text-align:center !important;
+  padding:8px 10px;
+  border:1px solid rgba(49,51,63,0.18);
+  white-space:nowrap;
+  font-weight:600;
+}
+table.rw-table tbody td{
+  text-align:center !important;
+  vertical-align:middle !important;
+  padding:6px 10px;
+  border:1px solid rgba(49,51,63,0.12);
+  white-space:nowrap;
+}
+table.rw-table tbody tr:nth-child(even){background:#f3f6f9;}
+table.rw-table tbody tr:nth-child(odd){background:#ffffff;}
+
 
 /* --- عمومی --- */
 #MainMenu {visibility: hidden;}
