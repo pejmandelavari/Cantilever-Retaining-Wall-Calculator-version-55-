@@ -447,45 +447,7 @@ def main():
 """, unsafe_allow_html=True)
 
     # --- 👈 Mobile sidebar hint (اینجا کپی کن) ---
-    st.markdown("""
-    <style>
-    @media (max-width: 768px) {
-
-  .rw-float-input-hint {
-    position: fixed;
-    top: 78px;
-    left: 14px;
-    z-index: 2147483647;
-
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    background: #fff3cd;
-    color: #664d03;
-    padding: 10px 12px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 700;
-
-    box-shadow: 0 6px 18px rgba(0,0,0,0.22);
-    pointer-events: none;
-    white-space: nowrap;
-  }
-
-  /* ✅ وقتی سایدبار باز شد، باکس زرد مخفی شود */
-  body[data-sidebar-state="expanded"] .rw-float-input-hint {
-    display: none !important;
-  }
-}
-</style>
-
-<div class="rw-float-input-hint">
-  <span style="font-size:18px;">👆</span>
-  <span>Tap it for inputs</span>
-</div>
-""", unsafe_allow_html=True)
-    
+        
     with st.sidebar:
         st.header("Inputs")
         h_stem = st.number_input("h_stem (m)", value=7.0, min_value=0.1, step=0.1)
