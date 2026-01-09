@@ -462,8 +462,8 @@ def main():
     r4.metric("Kp (full)", f"{res['Kp_full']:.3f}")
 
     r5,r6,r7,r8 = st.columns(4)
-    r5.metric("P_H (kN/m)", f"{res['P_H']:.3f}")
-    r6.metric("P_V (kN/m)", f"{res['P_V']:.3f}")
+    r5.metric("Pa_H (kN/m)", f"{res['P_H']:.3f}")
+    r6.metric("Pa_V (kN/m)", f"{res['P_V']:.3f}")
     r7.metric("Pp (kN/m)", f"{res['Pp']:.3f}")
     r8.metric("R_total (kN/m)", f"{res['R_total']:.3f}")
 
@@ -496,7 +496,7 @@ def main():
     st.divider()
     st.subheader("Vertical loads")
     st_scrollable_table(res["df_vertical"], height_px=260)
-
+            
     with st.expander("Outputs"):
         keys = [
         "B","H_active","alpha","i","Ka","Kp_full","Kp_reduced","H_front",
@@ -541,6 +541,8 @@ def main():
         "alpha": "α",
         "M_stab": "M_stabilizing",
         "M_ot": "M_overturning",
+        "P_H": "Pa_H",
+        "P_V": "Pa_V",
         }
 
     # توضیح خوانا برای کاربر
@@ -553,8 +555,8 @@ def main():
         "Ka": "Active earth pressure coefficient",
         "Kp_full": "Passive coefficient (full)",
         "Kp_reduced": "Passive coefficient (reduced)",
-        "P_H": "Resultant horizontal earth force",
-        "P_V": "Resultant vertical earth force",
+        "Pa_H": "Resultant horizontal earth force",
+        "Pa_V": "Resultant vertical earth force",
         "Pp": "Passive resultant force",
         "R_total": "Total vertical load",
         "M_stab": "Stabilizing moment",
