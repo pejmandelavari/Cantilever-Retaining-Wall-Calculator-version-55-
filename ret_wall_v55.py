@@ -8,42 +8,44 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="Cantilever Retaining Wall Calculator",
+    page_title="Your App",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 st.markdown("""
 <style>
+/* --- عمومی --- */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
 
-/* --- عمومی (دسکتاپ + موبایل) --- */
-#MainMenu {visibility:hidden;}
-footer {visibility:hidden;}
+/* دکمه Deploy/Cloud در برخی نسخه‌ها */
+.stDeployButton {display: none !important;}
+div[data-testid="stDeployButton"] {display: none !important;}
 
-/* حذف آیتم‌های مزاحم Cloud */
-div[data-testid="stStatusWidget"] {display:none !important;}
-div[data-testid="stDecoration"] {display:none !important;}
-
-/* --- فقط موبایل --- */
+/* --- فقط موبایل: آیکون‌های بالا و پایین --- */
 @media (max-width: 768px) {
 
-  /* آیکون‌های پایین صفحه (+ و 👑 و مشابه) */
+  /* آیکون‌های بالای صفحه (سمت راست) - بدون اینکه دکمه سایدبار را از بین ببرد */
+  div[data-testid="stToolbarActions"] {display: none !important;}
+  div[data-testid="stHeaderActionElements"] {display: none !important;}
+
+  /* آیکون‌های پایین ( + و 👑 و … ) */
+  div[data-testid="stStatusWidget"] {display: none !important;}
+  div[data-testid="stDecoration"] {display: none !important;}
+
   button[title="Create new app"],
   button[title="Streamlit Cloud"],
   button[aria-label="Create new app"],
   button[aria-label="Streamlit Cloud"],
-  button[aria-label="Open app menu"]{
-    display:none !important;
+  button[aria-label="Open app menu"] {
+    display: none !important;
   }
 
-  /* اگر داخل کانتینر fixed باشند */
-  div[style*="position: fixed"] button,
-  div[style*="position:fixed"] button,
-  div[style*="bottom"] button {
-    display:none !important;
-  }
+  /* نسخه‌های موبایل گاهی این‌ها را به صورت fixed می‌گذارند */
+  div[style*="position: fixed"][style*="bottom"] {display: none !important;}
+  div[style*="position:fixed"][style*="bottom"] {display: none !important;}
 }
-
 </style>
 """, unsafe_allow_html=True)
 
