@@ -446,39 +446,7 @@ def main():
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-    <style>
-    /* Mobile-only sidebar hint */
-    .sidebar-hint {
-        display: none;
-    }
-
-    @media (max-width: 768px) {
-        .sidebar-hint {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: #fff3cd;
-            color: #664d03;
-            padding: 8px 12px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-    }
-    </style>
-
-    <div class="sidebar-hint">
-        <span style="font-size:18px;">👈</span>
-        <span>
-            Inputs are available in the sidebar<br>
-            Tap the <b>≪</b> icon to open it
-        </span>
-    </div>
-    """, unsafe_allow_html=True) 
-
-with st.sidebar:
+    with st.sidebar:
         st.header("Inputs")
         h_stem = st.number_input("h_stem (m)", value=7.0, min_value=0.1, step=0.1)
         t_top  = st.number_input("t_top (m)", value=0.4, min_value=0.05, step=0.05)
