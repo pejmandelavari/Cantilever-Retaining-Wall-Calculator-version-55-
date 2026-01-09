@@ -450,7 +450,7 @@ def main():
             
     with st.sidebar:
         st.header("Inputs")
-        h_stem = st.number_input("h_stem (m)", value=7.0, min_value=0.1, step=0.1)
+        h_stem = st.number_input("stem height (m)", value=7.0, min_value=0.1, step=0.1)
         t_top  = st.number_input("t_top (m)", value=0.4, min_value=0.05, step=0.05)
         t_bot  = st.number_input("t_bot (m)", value=0.7, min_value=0.05, step=0.05)
         t_f    = st.number_input("t_f (m)", value=0.7, min_value=0.05, step=0.05)
