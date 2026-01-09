@@ -6,6 +6,7 @@ import math
 import numpy as np
 import pandas as pd
 import streamlit as st
+import streamlit as st
 
 st.set_page_config(
     page_title="Cantilever Retaining Wall Calculator",
@@ -15,10 +16,19 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-#MainMenu {visibility: hidden;}
+/* Hide Streamlit top bar */
 header {visibility: hidden;}
+
+/* Hide Streamlit menu (3 dots) */
+#MainMenu {visibility: hidden;}
+
+/* Hide footer */
 footer {visibility: hidden;}
-button {visibility: hidden;}
+
+/* Hide bottom floating buttons (+ and crown) */
+div[data-testid="stToolbar"] {display: none !important;}
+div[data-testid="stDecoration"] {display: none !important;}
+div[data-testid="stStatusWidget"] {display: none !important;}
 </style>
 """, unsafe_allow_html=True)
 
