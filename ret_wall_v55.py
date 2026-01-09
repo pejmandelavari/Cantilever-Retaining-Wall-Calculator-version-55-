@@ -474,7 +474,7 @@ def main():
         <span style="font-size:18px;">👈</span>
         <span>
             Inputs are available in the sidebar<br>
-            Tap the <b>≪</b> icon to open it
+            Tap the <b>>></b> icon to open it
         </span>
     </div>
     """, unsafe_allow_html=True)
