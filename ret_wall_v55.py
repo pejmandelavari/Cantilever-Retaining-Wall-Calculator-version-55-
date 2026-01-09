@@ -460,8 +460,8 @@ def main():
         align-items: center;
         gap: 8px;
         position: fixed;
-        top: 78px;          /* تنظیم دقیق کنار آیکون ≪ */
-        left: 10px;
+        top: 20px;          /* تنظیم دقیق کنار آیکون ≪ */
+        left: 50px;
         background-color: #fff3cd;
         color: #664d03;
         padding: 8px 10px;
