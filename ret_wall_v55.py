@@ -469,8 +469,8 @@ def main():
         passive_reduction = st.number_input("Passive reduction factor", value=0.5, min_value=0.0, max_value=1.0, step=0.05)
 
         st.divider()
-        mu = st.number_input("μ (base friction)", value=0.58, min_value=0.0, max_value=1.5, step=0.01)
-        q_allow = st.number_input("q_allow (kPa)", value=200.0, min_value=1.0, step=10.0)
+        mu = st.number_input("friction coefficient at base [μ]", value=0.58, min_value=0.0, max_value=1.5, step=0.01)
+        q_allow = st.number_input("allowable bearing pressure at base (kPa)", value=200.0, min_value=1.0, step=10.0)
         st.divider()
         # Schematic settings (fixed)
         mode = "simple"
