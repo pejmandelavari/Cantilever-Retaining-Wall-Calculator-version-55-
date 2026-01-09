@@ -447,61 +447,7 @@ def main():
 """, unsafe_allow_html=True)
 
     # --- 👈 Mobile sidebar hint (اینجا کپی کن) ---
-    st.markdown("""
-<style>
-/* --- Hint is hidden by default everywhere --- */
-.rw-float-input-hint{ display:none; }
-
-/* ✅ Show ONLY on real touch/mobile devices (prevents showing on desktop web) */
-@media (max-width: 768px) and (hover: none) and (pointer: coarse) {
-  .rw-float-input-hint{
-    display:flex;
-    align-items:center;
-    gap:8px;
-
-    position: fixed;
-    top: 78px;     /* 👈 اینو تنظیم کن */
-    left: 14px;
-
-    background:#fff3cd;
-    color:#664d03;
-    padding:10px 12px;
-    border-radius:12px;
-
-    font-size:13px;
-    font-weight:700;
-
-    box-shadow:0 6px 18px rgba(0,0,0,0.22);
-
-    /* IMPORTANT: keep it ABOVE page, but BELOW sidebar */
-    z-index: 100;
-
-    pointer-events:none;
-    white-space:nowrap;
-  }
-
-  /* ✅ Force sidebar always above the hint */
-  section[data-testid="stSidebar"],
-  div[data-testid="stSidebar"]{
-    position: relative !important;
-    z-index: 10000 !important;
-  }
-
-  /* Some builds render an overlay/backdrop; keep it above too */
-  div[data-testid="stSidebarContent"],
-  div[data-testid="stSidebarUserContent"]{
-    position: relative !important;
-    z-index: 10001 !important;
-  }
-}
-</style>
-
-<div class="rw-float-input-hint">
-  <span style="font-size:18px;">👆</span>
-  <span>Tap it for inputs</span>
-</div>
-""", unsafe_allow_html=True)
-        
+            
     with st.sidebar:
         st.header("Inputs")
         h_stem = st.number_input("h_stem (m)", value=7.0, min_value=0.1, step=0.1)
