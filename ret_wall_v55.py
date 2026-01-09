@@ -487,6 +487,11 @@ div.block-container {
     white-space: nowrap;
   }
 
+  /* وقتی سایدبار باز است، باکس راهنما مخفی شود */
+  body[data-sidebar-state="expanded"] .rw-float-input-hint {
+    display: none !important;
+  }
+
   .rw-float-input-hint .icon {
     font-size: 18px;
     line-height: 1;
