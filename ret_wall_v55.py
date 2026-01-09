@@ -536,8 +536,11 @@ def main():
         SYMBOL = {
         "sigma_max": "f_max",
         "sigma_min": "f_min",
-        "FS_ot": "FS_ot",
-        "FS_sl": "FS_sl",
+        "FS_ot": "FS_overturning",
+        "FS_sl": "FS_sliding",
+        "alpha": "α",
+        "M_stab": "M_stabilizing",
+        "M_ot": "M_overturning",
         }
 
     # توضیح خوانا برای کاربر
