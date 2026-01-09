@@ -6,29 +6,31 @@ import math
 import numpy as np
 import pandas as pd
 import streamlit as st
-import streamlit as st
 
-st.set_page_config(
-    page_title="Cantilever Retaining Wall Calculator",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(layout="wide")
 
 st.markdown("""
 <style>
-/* Hide Streamlit top bar */
-header {visibility: hidden;}
+/* عمومی */
+#MainMenu {visibility:hidden;}
+footer {visibility:hidden;}
+div[data-testid="stStatusWidget"] {display:none !important;}
+div[data-testid="stDecoration"] {display:none !important;}
 
-/* Hide Streamlit menu (3 dots) */
-#MainMenu {visibility: hidden;}
+/* --- فقط برای موبایل --- */
+@media (max-width: 768px) {
 
-/* Hide footer */
-footer {visibility: hidden;}
+  /* بعضی نسخه‌ها این‌ها را برای دکمه‌های شناور استفاده می‌کنند */
+  div[data-testid="stToolbarActions"] {display:none !important;}
+  div[data-testid="stBottomBlockContainer"] {display:none !important;}
 
-/* Hide bottom floating buttons (+ and crown) */
-div[data-testid="stToolbar"] {display: none !important;}
-div[data-testid="stDecoration"] {display: none !important;}
-div[data-testid="stStatusWidget"] {display: none !important;}
+  /* خود دکمه‌ها (در موبایل معمولاً title/aria-label دارند) */
+  button[title="Create new app"] {display:none !important;}
+  button[title="Streamlit Cloud"] {display:none !important;}
+  button[aria-label="Create new app"] {display:none !important;}
+  button[aria-label="Streamlit Cloud"] {display:none !important;}
+  button[aria-label="Open app menu"] {display:none !important;}
+}
 </style>
 """, unsafe_allow_html=True)
 
