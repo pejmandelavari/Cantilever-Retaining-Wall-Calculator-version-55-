@@ -6,6 +6,38 @@ import math
 import numpy as np
 import pandas as pd
 import streamlit as st
+# --- Display formatting ---
+pd.options.display.float_format = "{:.3f}".format
+
+def _round_df_3(df: pd.DataFrame) -> pd.DataFrame:
+    """Return a copy of df with all float columns rounded to 3 decimals."""
+    if df is None:
+        return df
+    out = df.copy()
+    for c in out.columns:
+        if pd.api.types.is_float_dtype(out[c]) or pd.api.types.is_numeric_dtype(out[c]):
+            # round only floats; keep ints intact
+            if pd.api.types.is_float_dtype(out[c]):
+                out[c] = out[c].round(3)
+    return out
+
+def st_scrollable_table(df: pd.DataFrame, *, height_px: int = 320):
+    """Render a horizontally-scrollable table (mobile-friendly) without Streamlit dataframe toolbars."""
+    if df is None:
+        st.info("No table to display.")
+        return
+    df2 = _round_df_3(df)
+    html = df2.to_html(index=False, escape=False, float_format=lambda x: f"{x:.3f}")
+    st.markdown(
+        f'''
+        <div style="width:100%; overflow-x:auto; overflow-y:auto; max-height:{height_px}px; border:1px solid rgba(49,51,63,0.2); border-radius:8px;">
+          <div style="min-width:max-content; padding:6px 8px;">
+            {html}
+          </div>
+        </div>
+        ''',
+        unsafe_allow_html=True
+    )
 
 st.set_page_config(
     page_title="Your App",
@@ -254,7 +286,7 @@ def draw_schematic_clean(res, mode="simple", show_pressures=True, show_dims=True
             # Full contact trapezoid
             poly_q = [(0, y0), (B, y0), (B, y0 - q_heel_draw * scale), (0, y0 - q_toe_draw * scale)]
             ax.add_patch(Polygon(poly_q, closed=True, facecolor="#A855F7", edgecolor="#6D28D9", alpha=0.20, linewidth=2))
-            ax.text(B/2, y0 - (0.80 + 0.15*max(t_f,1.0)), f"b_contact = {B:.2f} m", ha="center", va="top", fontsize=8, color="#4C1D95")
+            ax.text(B/2, y0 - (0.80 + 0.15*max(t_f,1.0)), f"b_contact = {B:.3f} m", ha="center", va="top", fontsize=8, color="#4C1D95")
             ax.text(B/2, y0 - (1.00 + 0.20*max(t_f,1.0)), "Bearing (trapezoid)", ha="center", va="top", fontsize=8, color="#4C1D95")
 # Resultant location
     # -------------------------
@@ -270,17 +302,17 @@ def draw_schematic_clean(res, mode="simple", show_pressures=True, show_dims=True
         ydim = -0.50*max(1.0,t_f)
         ax.annotate("", xy=(0, ydim), xytext=(B, ydim),
                     arrowprops=dict(arrowstyle="<->", lw=1.2, color="0.30"))
-        ax.text(B/2, ydim+0.1*max(1.0,t_f), f"B={B:.2f} m", fontsize=8, ha="center", color="0.25")
+        ax.text(B/2, ydim+0.1*max(1.0,t_f), f"B={B:.3f} m", fontsize=8, ha="center", color="0.25")
 
         # Height H
         xdim = B + 0.25*B
         ax.annotate("", xy=(xdim, 0.0), xytext=(xdim, H),
                     arrowprops=dict(arrowstyle="<->", lw=1.2, color="0.30"))
-        ax.text(xdim+0.02*B, (0.0+H)/2, f"H={H:.2f} m", fontsize=8, rotation=90, va="center", color="0.25")
+        ax.text(xdim+0.02*B, (0.0+H)/2, f"H={H:.3f} m", fontsize=8, rotation=90, va="center", color="0.25")
 
         # L_toe and L_heel labels (minimal)
-        ax.text(L_toe/2, t_f+0.1, f"Toe {L_toe:.2f}", fontsize=8, ha="center", color="0.20")
-        ax.text(B - L_heel/2, t_f+0.1, f"Heel {L_heel:.2f}", fontsize=8, ha="center", color="0.20")
+        ax.text(L_toe/2, t_f+0.1, f"Toe {L_toe:.3f}", fontsize=8, ha="center", color="0.20")
+        ax.text(B - L_heel/2, t_f+0.1, f"Heel {L_heel:.3f}", fontsize=8, ha="center", color="0.20")
 
     # Extra info (detailed)
     if mode == "detailed":
@@ -328,11 +360,11 @@ def main():
         st.divider()
         mu = st.number_input("μ (base friction)", value=0.58, min_value=0.0, max_value=1.5, step=0.01)
         q_allow = st.number_input("q_allow (kPa)", value=200.0, min_value=1.0, step=10.0)
-
         st.divider()
-        mode = st.selectbox("Schematic detail", ["simple", "detailed"], index=0)
-        show_pressures = st.checkbox("Show pressure diagrams", value=True)
-        show_dims = st.checkbox("Show key dimensions", value=True)
+        # Schematic settings (fixed)
+        mode = "simple"
+        show_pressures = True
+        show_dims = True
 
     inputs = {
         "h_stem": h_stem, "t_top": t_top, "t_bot": t_bot, "t_f": t_f,
@@ -354,10 +386,10 @@ def main():
     r4.metric("Kp (full)", f"{res['Kp_full']:.3f}")
 
     r5,r6,r7,r8 = st.columns(4)
-    r5.metric("P_H (kN/m)", f"{res['P_H']:.2f}")
-    r6.metric("P_V (kN/m)", f"{res['P_V']:.2f}")
-    r7.metric("Pp (kN/m)", f"{res['Pp']:.2f}")
-    r8.metric("R_total (kN/m)", f"{res['R_total']:.2f}")
+    r5.metric("P_H (kN/m)", f"{res['P_H']:.3f}")
+    r6.metric("P_V (kN/m)", f"{res['P_V']:.3f}")
+    r7.metric("Pp (kN/m)", f"{res['Pp']:.3f}")
+    r8.metric("R_total (kN/m)", f"{res['R_total']:.3f}")
 
     st.divider()
 
@@ -371,8 +403,8 @@ def main():
     with right:
         st.subheader("Stability Checks")
         c1,c2 = st.columns(2)
-        c1.metric("FS sliding", f"{res['FS_sl']:.2f}", "OK ✅" if res["FS_sl"] >= 1.5 else "NOT OK ❌")
-        c2.metric("FS overturning", f"{res['FS_ot']:.2f}", "OK ✅" if res["FS_ot"] >= 2.0 else "NOT OK ❌")
+        c1.metric("FS sliding", f"{res['FS_sl']:.3f}", "OK ✅" if res["FS_sl"] >= 1.5 else "NOT OK ❌")
+        c2.metric("FS overturning", f"{res['FS_ot']:.3f}", "OK ✅" if res["FS_ot"] >= 2.0 else "NOT OK ❌")
 
         st.divider()
         b1,b2 = st.columns(2)
@@ -387,7 +419,7 @@ def main():
 
     st.divider()
     st.subheader("Vertical loads")
-    st.table(res["df_vertical"])
+    st_scrollable_table(res["df_vertical"], height_px=260)
 
     with st.expander("Outputs"):
         keys = [
@@ -467,7 +499,7 @@ def main():
         "Value": [res.get(k) for k in keys],
         })
 
-        st.table(dbg)
+        st_scrollable_table(dbg, height_px=360)
 
 
 if __name__ == "__main__":
