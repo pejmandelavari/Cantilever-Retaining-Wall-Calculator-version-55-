@@ -190,7 +190,7 @@ from matplotlib.patches import Patch
 # --- Schematic colors ---
 CONCRETE_COLOR = "#B0B0B0"  # concrete gray
 SOIL_BACK_COLOR = "#E6D3A3"  # soil (backfill)
-SOIL_FRONT_COLOR = "#D2B48C" # soil (front cover)
+SOIL_FRONT_COLOR = "#E6D3A3" # soil (front cover)
 
 from engine_locked import compute, rad
 
@@ -203,7 +203,7 @@ def draw_schematic_clean(res, mode="simple", show_pressures=True, show_dims=True
       - Clear layering (wall, soil, pressures, bearing)
       - Dimensions moved outside geometry to avoid overlap
       - Bearing pressure: trapezoid if full contact, triangle if uplift (per engine b_contact)
-      - b' contact reported and shown
+      - b_contact reported and shown
     """
     B = res["B"]; t_f = res["t_f"]; h = res["h_stem"]
     t_top = res["t_top"]; t_bot = res["t_bot"]
@@ -237,7 +237,7 @@ def draw_schematic_clean(res, mode="simple", show_pressures=True, show_dims=True
     footing = np.array([[0,0],[B,0],[B,t_f],[0,t_f]])
     # Filled concrete footing + outline
     ax.add_patch(Polygon(footing, closed=True, fill=True, facecolor=CONCRETE_COLOR, edgecolor="none", zorder=4))
-    ax.add_patch(Polygon(footing, closed=True, fill=False, linewidth=2.8, edgecolor="black", zorder=5))
+    ax.add_patch(Polygon(footing, closed=True, fill=False, linewidth=1, edgecolor="black", zorder=5))
 
     # Stem: front face vertical at x=L_toe; back face sloped
     x_front = L_toe
@@ -249,7 +249,7 @@ def draw_schematic_clean(res, mode="simple", show_pressures=True, show_dims=True
     ])
     # Filled concrete stem + outline
     ax.add_patch(Polygon(stem, closed=True, fill=True, facecolor=CONCRETE_COLOR, edgecolor="none", zorder=5))
-    ax.add_patch(Polygon(stem, closed=True, fill=False, linewidth=2.8, edgecolor="black", zorder=6))
+    ax.add_patch(Polygon(stem, closed=True, fill=False, linewidth=1, edgecolor="black", zorder=6))
 
     # Back face endpoints (for soil intersection)
     xb0, yb0 = x_front + t_bot, t_f
