@@ -101,27 +101,27 @@ def compute(inputs):
     # Stem concrete (rectangle): W = t_top * h_stem * gamma_c ; x = L_toe + 0.5*t_top
     W_stem_rect = t_top * h_stem * gamma_c
     x_stem_rect = L_toe + 0.5 * t_top
-    items.append(("Stem Concrete (rect)", W_stem_rect, x_stem_rect))
+    items.append(("Stem Concrete (rectangluar part)", W_stem_rect, x_stem_rect))
 
     # Stem concrete (triangle): W = 0.5*(t_bot - t_top)*h_stem*gamma_c ; x = L_toe + t_top + (1/3)*(t_bot - t_top)
     W_stem_tri = 0.5 * (t_bot - t_top) * h_stem * gamma_c
     x_stem_tri = L_toe + t_top + (1.0/3.0) * (t_bot - t_top)
-    items.append(("Stem Concrete (tri)", W_stem_tri, x_stem_tri))
+    items.append(("Stem Concrete (triangular part)", W_stem_tri, x_stem_tri))
 
     # Soil on heel rectangle: W = L_heel * h_stem * gamma_soil ; x = L_toe + t_bot + 0.5*L_heel
     W_soil_heel_rect = L_heel * h_stem * gamma_soil
     x_soil_heel_rect = L_toe + t_bot + 0.5 * L_heel
-    items.append(("Soil on Heel (rect)", W_soil_heel_rect, x_soil_heel_rect))
+    items.append(("Soil on Heel (rectangular part)", W_soil_heel_rect, x_soil_heel_rect))
 
     # Soil on heel triangle over stem slope: W = 0.5*(t_bot - t_top)*h_stem*gamma_soil ; x = L_toe + t_top + (2/3)*(t_bot - t_top)
     W_soil_heel_tri = 0.5 * (t_bot - t_top) * h_stem * gamma_soil
     x_soil_heel_tri = L_toe + t_top + (2.0/3.0) * (t_bot - t_top)
-    items.append(("Soil on Heel (tri)", W_soil_heel_tri, x_soil_heel_tri))
+    items.append(("Soil on Heel (triangular part)", W_soil_heel_tri, x_soil_heel_tri))
 
     # Soil above heel due to backfill slope: W = 0.5*(H_active - t_f - h_stem)*(L_heel + t_bot - t_top)*gamma_soil
     W_soil_slope = 0.5 * (H_active - t_f - h_stem) * (L_heel + t_bot - t_top) * gamma_soil
     x_soil_slope = B - (1.0/3.0) * (B - L_toe - t_top)
-    items.append(("Soil above Heel (slope)", W_soil_slope, x_soil_slope))
+    items.append(("Soil on Heel (slopped part)", W_soil_slope, x_soil_slope))
 
     # Soil on toe (front cover): W = L_toe * t_cover_front * gamma_soil ; x = 0.5*L_toe
     W_soil_toe = L_toe * t_cover_front * gamma_soil
@@ -129,7 +129,7 @@ def compute(inputs):
     items.append(("Soil on Toe", W_soil_toe, x_soil_toe))
 
     # Pv at heel end: W = P_V ; x = B
-    items.append(("P-V (vertical)", P_V, B))
+    items.append(("Pa-V", P_V, B))
 
     df = pd.DataFrame(items, columns=["Component","W (kN/m)","x from toe (m)"])
     df["M_about_toe (kN·m/m)"] = df["W (kN/m)"] * df["x from toe (m)"]
