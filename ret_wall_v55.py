@@ -427,7 +427,7 @@ def main():
     margin: 0;
     font-weight: 600;
     text-align: center;
-    font-size: 28px;   /* Desktop */
+    font-size: 32px;   /* Desktop */
 }
 
 /* Mobile */
@@ -436,7 +436,7 @@ def main():
         padding: 10px 14px;
     }
     .rw-title-box h1 {
-        font-size: 20px;  /* Mobile */
+        font-size: 24px;  /* Mobile */
     }
 }
 </style>
