@@ -7,32 +7,47 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Cantilever Retaining Wall Calculator",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 st.markdown("""
 <style>
-/* عمومی */
+
+/* --- عمومی (دسکتاپ + موبایل) --- */
 #MainMenu {visibility:hidden;}
 footer {visibility:hidden;}
+
+/* حذف آیتم‌های مزاحم Cloud */
 div[data-testid="stStatusWidget"] {display:none !important;}
 div[data-testid="stDecoration"] {display:none !important;}
 
-/* --- فقط برای موبایل --- */
+/* --- فقط موبایل --- */
 @media (max-width: 768px) {
 
-  /* بعضی نسخه‌ها این‌ها را برای دکمه‌های شناور استفاده می‌کنند */
-  div[data-testid="stToolbarActions"] {display:none !important;}
-  div[data-testid="stBottomBlockContainer"] {display:none !important;}
+  /* آیکون‌های پایین صفحه (+ و 👑 و مشابه) */
+  button[title="Create new app"],
+  button[title="Streamlit Cloud"],
+  button[aria-label="Create new app"],
+  button[aria-label="Streamlit Cloud"],
+  button[aria-label="Open app menu"]{
+    display:none !important;
+  }
 
-  /* خود دکمه‌ها (در موبایل معمولاً title/aria-label دارند) */
-  button[title="Create new app"] {display:none !important;}
-  button[title="Streamlit Cloud"] {display:none !important;}
-  button[aria-label="Create new app"] {display:none !important;}
-  button[aria-label="Streamlit Cloud"] {display:none !important;}
-  button[aria-label="Open app menu"] {display:none !important;}
+  /* اگر داخل کانتینر fixed باشند */
+  div[style*="position: fixed"] button,
+  div[style*="position:fixed"] button,
+  div[style*="bottom"] button {
+    display:none !important;
+  }
 }
+
 </style>
 """, unsafe_allow_html=True)
+
+# ---- ادامه کد اپ ----
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
