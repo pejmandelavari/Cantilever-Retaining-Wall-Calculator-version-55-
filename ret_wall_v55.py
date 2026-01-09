@@ -470,7 +470,7 @@ div.block-container {
     gap: 8px;
 
     position: fixed;
-    top: 78px;      /* 👈 این عدد را کم/زیاد کن */
+    top: 48px;      /* 👈 این عدد را کم/زیاد کن */
     left: 14px;
 
     background: #fff3cd;
