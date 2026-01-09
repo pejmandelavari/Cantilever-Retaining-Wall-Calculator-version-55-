@@ -6,7 +6,6 @@ import math
 import numpy as np
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 # --- Display formatting ---
 pd.options.display.float_format = "{:.3f}".format
 
@@ -448,51 +447,58 @@ def main():
 """, unsafe_allow_html=True)
 
     # --- 👈 Mobile sidebar hint (اینجا کپی کن) ---
-    components.html(
-    """
-    <script>
-    (function () {
-      // Only show on mobile
-      const isMobile = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
-      if (!isMobile) return;
+    st.markdown("""
+<style>
+/* جلوگیری از clipping در WebView موبایل */
+div[data-testid="stAppViewContainer"],
+div[data-testid="stApp"],
+section.main,
+div.block-container {
+  overflow: visible !important;
+}
 
-      // Avoid duplicates
-      if (document.getElementById("rw_sidebar_hint")) return;
+/* پیش‌فرض مخفی */
+.rw-float-input-hint {
+  display: none;
+}
 
-      const hint = document.createElement("div");
-      hint.id = "rw_sidebar_hint";
-      hint.innerHTML = "<span style='font-size:20px;'>👈</span><span style='margin-left:6px;'>Tap it to enter inputs</span>";
+/* فقط موبایل */
+@media (max-width: 768px) {
+  .rw-float-input-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
-      // Styling (floating near the sidebar toggle icon)
-      hint.style.position = "fixed";
-      hint.style.top = "152px";              // 🔼 کمترش کنی بالاتر میره
-      hint.style.left = "8px";
-      hint.style.zIndex = "2147483647";     // Always on top
-      hint.style.background = "#fff3cd";
-      hint.style.color = "#664d03";
-      hint.style.padding = "8px 10px";
-      hint.style.borderRadius = "10px";
-      hint.style.fontSize = "13px";
-      hint.style.fontWeight = "600";
-      hint.style.boxShadow = "0 2px 10px rgba(0,0,0,0.18)";
-      hint.style.display = "flex";
-      hint.style.alignItems = "center";
-      hint.style.gap = "6px";
-      hint.style.pointerEvents = "none";    // doesn't block tapping the icon
+    position: fixed;
+    top: 78px;      /* 👈 این عدد را کم/زیاد کن */
+    left: 14px;
 
-      document.body.appendChild(hint);
+    background: #fff3cd;
+    color: #664d03;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
 
-      // Optional: auto-hide after 10s (can remove if you want it always)
-      setTimeout(() => {
-        const el = document.getElementById("rw_sidebar_hint");
-        if (el) el.remove();
-      }, 10000);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+    z-index: 2147483647;
 
-    })();
-    </script>
-    """,
-    height=0,
-)
+    pointer-events: none;  /* کلیک روی آیکون سایدبار خراب نشه */
+    white-space: nowrap;
+  }
+
+  .rw-float-input-hint .icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+}
+</style>
+
+<div class="rw-float-input-hint">
+  <span class="icon">👆</span>
+  <span>Tap it for inputs</span>
+</div>
+""", unsafe_allow_html=True)
     
     with st.sidebar:
         st.header("Inputs")
