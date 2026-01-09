@@ -447,53 +447,7 @@ def main():
 """, unsafe_allow_html=True)
 
     # --- 👈 Mobile sidebar hint (اینجا کپی کن) ---
-    import streamlit.components.v1 as components
-
-components.html(
-    """
-    <script>
-    (function () {
-      // اگر قبلاً ساخته شده، دوباره نساز
-      if (document.getElementById("rw_sidebar_hint")) return;
-
-      const hint = document.createElement("div");
-      hint.id = "rw_sidebar_hint";
-      hint.innerHTML = "👈 <span style='margin-left:6px;'>Tap it to enter inputs</span>";
-
-      // استایل مستقیم روی خود عنصر
-      hint.style.position = "fixed";
-      hint.style.top = "55px";              // این عدد رو برای بالاتر/پایین‌تر تغییر بده
-      hint.style.left = "10px";
-      hint.style.zIndex = "2147483647";     // حداکثر z-index (جلوی همه چیز)
-      hint.style.background = "#fff3cd";
-      hint.style.color = "#664d03";
-      hint.style.padding = "8px 10px";
-      hint.style.borderRadius = "10px";
-      hint.style.fontSize = "13px";
-      hint.style.fontWeight = "600";
-      hint.style.boxShadow = "0 2px 10px rgba(0,0,0,0.18)";
-      hint.style.display = "flex";
-      hint.style.alignItems = "center";
-      hint.style.gap = "6px";
-      hint.style.pointerEvents = "none";   // مزاحم کلیک روی UI نشه
-
-      // فقط روی موبایل نمایش بده
-      const isMobile = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
-      if (!isMobile) return;
-
-      document.body.appendChild(hint);
-
-      // (اختیاری) بعد از 8 ثانیه محو شود
-      setTimeout(() => {
-        const el = document.getElementById("rw_sidebar_hint");
-        if (el) el.style.display = "none";
-      }, 8000);
-    })();
-    </script>
-    """,
-    height=0,
-)
- 
+     
     with st.sidebar:
         st.header("Inputs")
         h_stem = st.number_input("h_stem (m)", value=7.0, min_value=0.1, step=0.1)
