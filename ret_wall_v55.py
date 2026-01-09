@@ -411,7 +411,24 @@ def draw_schematic_clean(res, mode="simple", show_pressures=True, show_dims=True
 
 def main():
     st.set_page_config(page_title="Cantilever Retaining Wall Calculator", layout="wide")
-    st.title("Cantilever Retaining Wall Calculator")
+
+    st.markdown("""
+    <div style="
+        background-color:#2f6fa5;
+        padding:14px 20px;
+        border-radius:12px;
+        margin-bottom:18px;
+    ">
+        <h2 style="
+            color:white;
+            margin:0;
+            font-weight:600;
+            text-align:center;
+        ">
+            Cantilever Retaining Wall Calculator
+        </h2>
+    </div>
+    """, unsafe_allow_html=True)
 
     with st.sidebar:
         st.header("Inputs")
