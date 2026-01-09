@@ -465,7 +465,7 @@ def main():
 
       // Styling (floating near the sidebar toggle icon)
       hint.style.position = "fixed";
-      hint.style.top = "52px";              // 🔼 کمترش کنی بالاتر میره
+      hint.style.top = "152px";              // 🔼 کمترش کنی بالاتر میره
       hint.style.left = "8px";
       hint.style.zIndex = "2147483647";     // Always on top
       hint.style.background = "#fff3cd";
