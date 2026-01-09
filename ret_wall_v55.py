@@ -341,13 +341,13 @@ def draw_schematic_clean(res, mode="simple", show_pressures=True, show_dims=True
 
             # label b_contact
             ax.text((x_left + x_right) / 2, y0 - (0.80 + 0.15*max(t_f,1.0)), f"b_contact = {b_contact:.3f} m", ha="center", va="top", fontsize=8, color="#4C1D95")
-            ax.text((x_left + x_right) / 2, y0 - (1.00 + 0.20*max(t_f,1.0)), "Bearing (triangle)", ha="center", va="top", fontsize=8, color="#4C1D95")
+            ax.text((x_left + x_right) / 2, y0 - (1.10 + 0.20*max(t_f,1.0)), "Bearing (triangle)", ha="center", va="top", fontsize=8, color="#4C1D95")
         else:
             # Full contact trapezoid
             poly_q = [(0, y0), (B, y0), (B, y0 - q_heel_draw * scale), (0, y0 - q_toe_draw * scale)]
             ax.add_patch(Polygon(poly_q, closed=True, facecolor="#A855F7", edgecolor="#6D28D9", alpha=0.20, linewidth=2))
             ax.text(B/2, y0 - (0.80 + 0.15*max(t_f,1.0)), f"b_contact = {B:.3f} m", ha="center", va="top", fontsize=8, color="#4C1D95")
-            ax.text(B/2, y0 - (1.00 + 0.20*max(t_f,1.0)), "Bearing (trapezoid)", ha="center", va="top", fontsize=8, color="#4C1D95")
+            ax.text(B/2, y0 - (1.10 + 0.20*max(t_f,1.0)), "Bearing (trapezoid)", ha="center", va="top", fontsize=8, color="#4C1D95")
 # Resultant location
     # -------------------------
     ax.annotate("", xy=(x_R, t_f+0.4), xytext=(x_R, t_f + 1.40),
