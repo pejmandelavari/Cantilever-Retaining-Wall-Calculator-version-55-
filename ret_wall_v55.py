@@ -469,7 +469,7 @@ def main():
         font-size: 13px;
         font-weight: 600;
         box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        z-index: 9999;
+        z-index: 99999;
     }
 }
 </style>
