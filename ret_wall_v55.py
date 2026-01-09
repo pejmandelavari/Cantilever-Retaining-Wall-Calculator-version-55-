@@ -514,8 +514,8 @@ def main():
     with right:
         st.subheader("Stability Checks")
         c1,c2 = st.columns(2)
-        c1.metric("FS sliding", f"{res['FS_sl']:.3f}", "OK ✅" if res["FS_sl"] >= 1.5 else "NOT OK ❌")
-        c2.metric("FS overturning", f"{res['FS_ot']:.3f}", "OK ✅" if res["FS_ot"] >= 2.0 else "NOT OK ❌")
+        c1.metric("FS_sliding", f"{res['FS_sl']:.3f}", "OK ✅" if res["FS_sl"] >= 1.5 else "NOT OK ❌")
+        c2.metric("FS_overturning", f"{res['FS_ot']:.3f}", "OK ✅" if res["FS_ot"] >= 2.0 else "NOT OK ❌")
 
         st.divider()
         b1,b2 = st.columns(2)
