@@ -448,30 +448,18 @@ def main():
 
     # --- 👈 Mobile sidebar hint (اینجا کپی کن) ---
     st.markdown("""
-<style>
-/* جلوگیری از clipping در WebView موبایل */
-div[data-testid="stAppViewContainer"],
-div[data-testid="stApp"],
-section.main,
-div.block-container {
-  overflow: visible !important;
-}
+    <style>
+    @media (max-width: 768px) {
 
-/* پیش‌فرض مخفی */
-.rw-float-input-hint {
-  display: none;
-}
-
-/* فقط موبایل */
-@media (max-width: 768px) {
   .rw-float-input-hint {
+    position: fixed;
+    top: 78px;
+    left: 14px;
+    z-index: 2147483647;
+
     display: flex;
     align-items: center;
     gap: 8px;
-
-    position: fixed;
-    top: 48px;      /* 👈 این عدد را کم/زیاد کن */
-    left: 14px;
 
     background: #fff3cd;
     color: #664d03;
@@ -481,26 +469,19 @@ div.block-container {
     font-weight: 700;
 
     box-shadow: 0 6px 18px rgba(0,0,0,0.22);
-    z-index: 2147483647;
-
-    pointer-events: none;  /* کلیک روی آیکون سایدبار خراب نشه */
+    pointer-events: none;
     white-space: nowrap;
   }
 
-  /* وقتی سایدبار باز است، باکس راهنما مخفی شود */
+  /* ✅ وقتی سایدبار باز شد، باکس زرد مخفی شود */
   body[data-sidebar-state="expanded"] .rw-float-input-hint {
     display: none !important;
-  }
-
-  .rw-float-input-hint .icon {
-    font-size: 18px;
-    line-height: 1;
   }
 }
 </style>
 
 <div class="rw-float-input-hint">
-  <span class="icon">👆</span>
+  <span style="font-size:18px;">👆</span>
   <span>Tap it for inputs</span>
 </div>
 """, unsafe_allow_html=True)
