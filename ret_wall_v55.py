@@ -413,22 +413,38 @@ def main():
     st.set_page_config(page_title="Cantilever Retaining Wall Calculator", layout="wide")
 
     st.markdown("""
-    <div style="
-        background-color:#2f6fa5;
-        padding:14px 20px;
-        border-radius:12px;
-        margin-bottom:18px;
-    ">
-        <h2 style="
-            color:white;
-            margin:0;
-            font-weight:600;
-            text-align:center;
-        ">
-            Cantilever Retaining Wall Calculator
-        </h2>
-    </div>
-    """, unsafe_allow_html=True)
+<style>
+/* Responsive title */
+.rw-title-box {
+    background-color: #2f6fa5;
+    padding: 14px 20px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+}
+
+.rw-title-box h1 {
+    color: white;
+    margin: 0;
+    font-weight: 600;
+    text-align: center;
+    font-size: 28px;   /* Desktop */
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .rw-title-box {
+        padding: 10px 14px;
+    }
+    .rw-title-box h1 {
+        font-size: 20px;  /* Mobile */
+    }
+}
+</style>
+
+<div class="rw-title-box">
+    <h1>Cantilever Retaining Wall Calculator</h1>
+</div>
+""", unsafe_allow_html=True)
 
     with st.sidebar:
         st.header("Inputs")
