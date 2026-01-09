@@ -15,6 +15,10 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+/* Hide per-element toolbar icons (download/search/fullscreen) */
+div[data-testid="stElementToolbar"] {display: none !important;}
+div.modebar {display: none !important;}
+
 /* --- عمومی --- */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
@@ -383,7 +387,7 @@ def main():
 
     st.divider()
     st.subheader("Vertical loads")
-    st.dataframe(res["df_vertical"], use_container_width=True)
+    st.table(res["df_vertical"])
 
     with st.expander("Outputs"):
         keys = [
@@ -463,7 +467,7 @@ def main():
         "Value": [res.get(k) for k in keys],
         })
 
-        st.dataframe(dbg, use_container_width=True)
+        st.table(dbg)
 
 
 if __name__ == "__main__":
