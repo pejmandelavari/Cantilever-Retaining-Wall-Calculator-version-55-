@@ -448,36 +448,37 @@ def main():
 
     # --- 👈 Mobile sidebar hint (اینجا کپی کن) ---
     st.markdown("""
-    <style>
-    /* Mobile-only sidebar hint */
-    .sidebar-hint {
-        display: none;
-    }
+<style>
+/* Floating sidebar hint near toggle icon (mobile only) */
+.sidebar-float-hint {
+    display: none;
+}
 
-    @media (max-width: 768px) {
-        .sidebar-hint {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: #fff3cd;
-            color: #664d03;
-            padding: 8px 12px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            font-size: 14px;
-            font-weight: 500;
-        }
+@media (max-width: 768px) {
+    .sidebar-float-hint {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: fixed;
+        top: 78px;          /* تنظیم دقیق کنار آیکون ≪ */
+        left: 10px;
+        background-color: #fff3cd;
+        color: #664d03;
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        z-index: 9999;
     }
-    </style>
+}
+</style>
 
-    <div class="sidebar-hint">
-        <span style="font-size:18px;">👈</span>
-        <span>
-            Inputs are available in the sidebar<br>
-            Tap the <b>>></b> icon to open it
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
+<div class="sidebar-float-hint">
+    <span style="font-size:20px;">👈</span>
+    <span>Tap it to enter inputs</span>
+</div>
+""", unsafe_allow_html=True)
  
     with st.sidebar:
         st.header("Inputs")
