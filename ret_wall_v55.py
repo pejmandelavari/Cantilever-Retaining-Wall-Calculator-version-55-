@@ -494,7 +494,7 @@ def main():
     r1.metric("B (m)", f"{res['B']:.3f}")
     r2.metric("H_active (m)", f"{res['H_active']:.3f}")
     r3.metric("Ka", f"{res['Ka']:.6f}")
-    r4.metric("Kp (full)", f"{res['Kp_full']:.3f}")
+    r4.metric("Kp_full", f"{res['Kp_full']:.3f}")
 
     r5,r6,r7,r8 = st.columns(4)
     r5.metric("Pa_H (kN/m)", f"{res['P_H']:.3f}")
@@ -529,7 +529,7 @@ def main():
         d2.metric("e_base (m)", f"{res['e_base']:.3f}", "OK ✅" if res["e_base"] <= res["kern"] else "NOT OK ❌")
 
     st.divider()
-    st.subheader("Vertical loads")
+    st.subheader("Vertical Loads Breakdown")
     st_scrollable_table(res["df_vertical"], height_px=260)
             
     with st.expander("Outputs"):
