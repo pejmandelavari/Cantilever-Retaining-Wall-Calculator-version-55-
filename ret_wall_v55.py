@@ -532,7 +532,8 @@ def main():
     st.subheader("Vertical Loads Breakdown")
     st_scrollable_table(res["df_vertical"], height_px=260)
             
-    with st.expander("Outputs"):
+    st.subheader("Outputs")
+    with st.expander("", expanded=True):
         keys = [
         "B","H_active","alpha","i","Ka","Kp_full","Kp_reduced","H_front",
         "P_H","P_V","Pp","R_total","M_stab","x_R","e_load",
