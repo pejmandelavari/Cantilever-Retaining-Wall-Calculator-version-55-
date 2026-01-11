@@ -8,21 +8,35 @@ import pandas as pd
 import streamlit as st
 st.markdown("""
 <style>
-/* Remove bottom margin from all sidebar widgets */
-section[data-testid="stSidebar"] .stNumberInput,
-section[data-testid="stSidebar"] .stSlider,
-section[data-testid="stSidebar"] .stSelectbox,
-section[data-testid="stSidebar"] .stTextInput,
-section[data-testid="stSidebar"] .stMarkdown {
-    margin-bottom: 0rem !important;
+/* 1) Reduce vertical spacing between sidebar widgets */
+section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div {
+  gap: 0.35rem !important;
 }
 
-/* Move buttons closer to inputs */
-section[data-testid="stSidebar"] .stButton {
-    margin-top: 0.5rem !important;
+/* 2) Make a sticky footer area inside the sidebar */
+section[data-testid="stSidebar"] .stSidebarContent {
+  padding-bottom: 7.5rem !important; /* space for the sticky buttons */
+}
+
+.sidebar-sticky-footer {
+  position: sticky;
+  bottom: 0;
+  background: white;              /* match sidebar bg */
+  padding: 0.75rem 0.75rem 1rem 0.75rem;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  z-index: 100;
 }
 </style>
 """, unsafe_allow_html=True)
+with st.sidebar:
+    # ... همه ورودی‌ها بالا ...
+
+    st.markdown('<div class="sidebar-sticky-footer">', unsafe_allow_html=True)
+
+    run_clicked = st.button("Run analysis", use_container_width=True, key="run_btn")
+    pdf_clicked = st.button("Create PDF report", use_container_width=True, key="pdf_btn")
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # --- Display formatting ---
 pd.options.display.float_format = "{:.3f}".format
