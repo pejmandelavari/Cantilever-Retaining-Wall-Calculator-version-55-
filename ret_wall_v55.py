@@ -9,6 +9,128 @@ import streamlit as st
 # --- Display formatting ---
 pd.options.display.float_format = "{:.3f}".format
 
+# ----------------------------
+# PDF report helpers (UI only)
+# ----------------------------
+from io import BytesIO
+from datetime import datetime
+
+def _fig_to_png_bytes(fig, dpi: int = 160) -> bytes:
+    buf = BytesIO()
+    fig.savefig(buf, format="png", dpi=dpi, bbox_inches="tight")
+    return buf.getvalue()
+
+def build_pdf_bytes(
+    title: str,
+    inputs_display: list[tuple[str, float]],
+    df_summary: pd.DataFrame,
+    df_checks: pd.DataFrame,
+    df_vertical: pd.DataFrame,
+    df_outputs: pd.DataFrame,
+    schematic_png: bytes | None = None,
+) -> bytes:
+    """Create a PDF report that mirrors what the user sees in the app.
+
+    Notes:
+      - Keeps the SAME table columns/values as the UI (no renaming).
+      - Uses ReportLab Platypus Tables for consistent, multi-page rendering.
+    """
+    from reportlab.lib.pagesizes import letter
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib import colors
+    from reportlab.lib.units import inch
+    from reportlab.lib.utils import ImageReader
+
+    buf = BytesIO()
+    doc = SimpleDocTemplate(
+        buf,
+        pagesize=letter,
+        leftMargin=0.65 * inch,
+        rightMargin=0.65 * inch,
+        topMargin=0.60 * inch,
+        bottomMargin=0.60 * inch,
+        title=title,
+    )
+    styles = getSampleStyleSheet()
+    story = []
+
+    def _tbl(df: pd.DataFrame, col_widths=None) -> Table:
+        if df is None:
+            df = pd.DataFrame()
+        df2 = _round_df_3(df).copy()
+        data = [list(df2.columns)] + df2.astype(str).values.tolist()
+
+        t = Table(data, colWidths=col_widths, repeatRows=1)
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#2f6fa5")),
+            ("TEXTCOLOR",  (0,0), (-1,0), colors.white),
+            ("FONTNAME",   (0,0), (-1,0), "Helvetica-Bold"),
+            ("FONTSIZE",   (0,0), (-1,0), 9),
+            ("ALIGN",      (0,0), (-1,-1), "CENTER"),
+            ("VALIGN",     (0,0), (-1,-1), "MIDDLE"),
+            ("GRID",       (0,0), (-1,-1), 0.25, colors.grey),
+            ("FONTSIZE",   (0,1), (-1,-1), 8),
+            ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.white, colors.HexColor("#f3f6f9")]),
+            ("LEFTPADDING", (0,0), (-1,-1), 3),
+            ("RIGHTPADDING",(0,0), (-1,-1), 3),
+            ("TOPPADDING",  (0,0), (-1,-1), 2),
+            ("BOTTOMPADDING",(0,0), (-1,-1), 2),
+        ]))
+        return t
+
+    def _section(h: str):
+        story.append(Paragraph(f"<b>{h}</b>", styles["Heading3"]))
+        story.append(Spacer(1, 0.10 * inch))
+
+    # Title
+    story.append(Paragraph(f"<b>{title}</b>", styles["Title"]))
+    story.append(Paragraph(datetime.now().strftime("%Y-%m-%d %H:%M"), styles["Normal"]))
+    story.append(Spacer(1, 0.20 * inch))
+
+    # Inputs (exact labels shown in sidebar)
+    _section("Inputs")
+    df_in = pd.DataFrame({"Parameter": [k for k,_ in inputs_display], "Value": [v for _,v in inputs_display]})
+    story.append(_tbl(df_in, col_widths=[3.9*inch, 2.5*inch]))
+    story.append(Spacer(1, 0.18 * inch))
+
+    # Summary (same as top metrics)
+    _section("Key Results")
+    story.append(_tbl(df_summary))
+    story.append(Spacer(1, 0.18 * inch))
+
+    # Stability checks
+    _section("Stability Checks")
+    story.append(_tbl(df_checks))
+    story.append(Spacer(1, 0.18 * inch))
+
+    # Schematic
+    if schematic_png:
+        _section("Wall Schematic")
+        try:
+            img_reader = ImageReader(BytesIO(schematic_png))
+            iw, ih = img_reader.getSize()
+            max_w = doc.width
+            max_h = 5.0 * inch
+            scale = min(max_w / iw, max_h / ih)
+            story.append(Image(BytesIO(schematic_png), width=iw*scale, height=ih*scale))
+        except Exception:
+            story.append(Paragraph("Schematic image could not be rendered.", styles["Normal"]))
+        story.append(Spacer(1, 0.18 * inch))
+
+    # Vertical loads
+    _section("Vertical Loads Breakdown")
+    story.append(_tbl(df_vertical))
+    story.append(Spacer(1, 0.18 * inch))
+
+    # Outputs (exact table from app)
+    _section("Outputs")
+    story.append(_tbl(df_outputs, col_widths=[1.0*inch, 2.6*inch, 0.8*inch, 2.0*inch]))
+
+    doc.build(story)
+    return buf.getvalue()
+
+
 def _round_df_3(df: pd.DataFrame) -> pd.DataFrame:
     """Return a copy of df with all float columns rounded to 3 decimals."""
     if df is None:
@@ -411,6 +533,14 @@ def draw_schematic_clean(res, mode="simple", show_pressures=True, show_dims=True
 
 def main():
     st.set_page_config(page_title="Cantilever Retaining Wall Calculator", layout="wide")
+    # --- session state ---
+    if "analysis_ran" not in st.session_state:
+        st.session_state.analysis_ran = False
+    if "res" not in st.session_state:
+        st.session_state.res = None
+    if "is_running" not in st.session_state:
+        st.session_state.is_running = False
+
 
     st.markdown("""
 <style>
@@ -445,6 +575,22 @@ def main():
     <h1>Cantilever Retaining Wall Calculator</h1>
 </div>
 """, unsafe_allow_html=True)
+
+    st.markdown(
+    """
+### How to use this app
+
+1. Enter all input values from the left sidebar.
+2. After finishing input, click Run analysis.
+3. Review the calculated results and tables on this page.
+4. Click Create PDF report to download a complete report including:
+   - All inputs
+   - All calculated outputs
+   - Schematic of the wall
+
+All inputs are entered in the left sidebar.
+"""
+)
 
     # --- 👈 Mobile sidebar hint (اینجا کپی کن) ---
             
@@ -487,136 +633,298 @@ def main():
         "passive_reduction": passive_reduction,
     }
 
-    res = compute(inputs)
+    # Helper: return the current sidebar inputs (kept as a function so the
+    # run/pdf handlers can call it consistently).
+    def get_inputs_from_sidebar():
+        return dict(inputs)
 
-    # Top metrics
-    r1,r2,r3,r4 = st.columns(4)
-    r1.metric("B (m)", f"{res['B']:.3f}")
-    r2.metric("H_active (m)", f"{res['H_active']:.3f}")
-    r3.metric("Ka", f"{res['Ka']:.6f}")
-    r4.metric("Kp_full", f"{res['Kp_full']:.3f}")
 
-    r5,r6,r7,r8 = st.columns(4)
-    r5.metric("Pa_H (kN/m)", f"{res['P_H']:.3f}")
-    r6.metric("Pa_V (kN/m)", f"{res['P_V']:.3f}")
-    r7.metric("Pp (kN/m)", f"{res['Pp']:.3f}")
-    r8.metric("R_total (kN/m)", f"{res['R_total']:.3f}")
+    inputs_display = [
+        ("stem height (m)", h_stem),
+        ("stem thickness at top (m)", t_top),
+        ("stem thickness at bottom (m)", t_bot),
+        ("footing thickness (m)", t_f),
+        ("toe length (m)", L_toe),
+        ("heel length (m)", L_heel),
+        ("unit weight of backfill, [γf] (kN/m³)", gamma_backfill),
+        ("internal friction angle of backfill, [φ] (deg)", phi),
+        ("wall-backfill interface friction angel [δ] (deg)", delta),
+        ("slope of backfill, [β] (deg)", beta),
+        ("unit weight of concrete [γc] (kN/m³)", gamma_concrete),
+        ("depth of front soil over the toe (m)", t_cover_front),
+        ("Passive reduction factor", passive_reduction),
+        ("friction coefficient at base [μ]", mu),
+        ("allowable bearing pressure at base (kPa)", q_allow),
+    ]
 
-    st.divider()
+    # --- Run control (do not auto-run on every widget change) ---
+    if "analysis_ran" not in st.session_state:
+        st.session_state.analysis_ran = False
+    if "res" not in st.session_state:
+        st.session_state.res = None
+    if "pdf_bytes" not in st.session_state:
+        st.session_state.pdf_bytes = None
+    if "is_running" not in st.session_state:
+        st.session_state.is_running = False
 
-    left, right = st.columns([1.25, 1.0])
+    st.sidebar.markdown("---")
+    run_clicked = st.sidebar.button("Run analysis", type="primary", use_container_width=True, key="run_analysis_btn", disabled=st.session_state.is_running)
+    build_pdf_clicked = st.sidebar.button("Create PDF report", use_container_width=True, key="pdf_report_btn", disabled=st.session_state.is_running)
 
-    with left:
-        st.subheader("Wall Schematic")
-        fig = draw_schematic_clean(res, mode=mode, show_pressures=show_pressures, show_dims=show_dims)
-        st.pyplot(fig, use_container_width=True)
+    if run_clicked:
+        st.session_state.is_running = True
+        with st.sidebar:
+            with st.spinner("Running analysis..."):
+                try:
+                    inputs = get_inputs_from_sidebar()
+                    res = compute(inputs)
+                    st.session_state.res = res
+                    st.session_state.analysis_ran = True
+                finally:
+                    st.session_state.is_running = False
+        st.sidebar.success("Analysis complete.")
+        st.rerun()
 
-    with right:
-        st.subheader("Stability Checks")
-        c1,c2 = st.columns(2)
-        c1.metric("FS_sliding", f"{res['FS_sl']:.3f}", "OK ✅" if res["FS_sl"] >= 1.5 else "NOT OK ❌")
-        c2.metric("FS_overturning", f"{res['FS_ot']:.3f}", "OK ✅" if res["FS_ot"] >= 2.0 else "NOT OK ❌")
+    if build_pdf_clicked:
+        # Ensure we have up-to-date results
+        if not st.session_state.get("analysis_ran", False) or ("res" not in st.session_state):
+            inputs = get_inputs_from_sidebar()
+            st.session_state.res = compute(inputs)
+            st.session_state.analysis_ran = True
+        res = st.session_state.res
 
-        st.divider()
-        b1,b2 = st.columns(2)
-        b1.metric("f_max (kPa)", f"{res['sigma_max']:.1f}", "OK ✅" if res["sigma_max"] <= res["q_allow"] else "NOT OK ❌")
-        b2.metric("f_min (kPa)", f"{res['sigma_min']:.1f}", "OK ✅" if res["sigma_min"] >= 0 else "NOT OK ❌")
+        # Reuse the same schematic generator used on-screen
+        try:
+            fig_tmp = draw_schematic_clean(res, mode=mode, show_pressures=show_pressures, show_dims=show_dims)
+            schem_png = _fig_to_png_bytes(fig_tmp)
+        except Exception:
+            schem_png = None
 
-        st.caption(f"b_contact = {res['b_contact']:.3f} m  |  B/6 = {res['kern']:.3f} m")
-        st.divider()
-        d1,d2 = st.columns(2)
-        d1.metric("x_R (m from toe)", f"{res['x_R']:.3f}")
-        d2.metric("e_base (m)", f"{res['e_base']:.3f}", "OK ✅" if res["e_base"] <= res["kern"] else "NOT OK ❌")
+        # --- Build the SAME tables the user sees in the UI ---
+        # Key Results (top metrics)
+        df_summary = pd.DataFrame([{
+            "B (m)": res.get("B"),
+            "H_active (m)": res.get("H_active"),
+            "Ka": res.get("Ka"),
+            "Kp_full": res.get("Kp_full"),
+            "Pa_H (kN/m)": res.get("P_H"),
+            "Pa_V (kN/m)": res.get("P_V"),
+            "Pp (kN/m)": res.get("Pp"),
+            "R_total (kN/m)": res.get("R_total"),
+        }])
 
-    st.divider()
-    st.subheader("Vertical Loads Breakdown")
-    st_scrollable_table(res["df_vertical"], height_px=260)
-            
-    st.subheader("Outputs")
-    with st.expander("", expanded=True):
+        # Stability checks (same thresholds as UI)
+        def _ok(val, limit, op: str):
+            try:
+                if op == ">=":
+                    return "OK ✅" if float(val) >= float(limit) else "NOT OK ❌"
+                if op == "<=":
+                    return "OK ✅" if float(val) <= float(limit) else "NOT OK ❌"
+            except Exception:
+                return ""
+            return ""
+
+        df_checks = pd.DataFrame([
+            {"Check": "FS_sliding", "Value": res.get("FS_sl"), "Criteria": "≥ 1.5", "Status": _ok(res.get("FS_sl"), 1.5, ">=")},
+            {"Check": "FS_overturning", "Value": res.get("FS_ot"), "Criteria": "≥ 2.0", "Status": _ok(res.get("FS_ot"), 2.0, ">=")},
+            {"Check": "f_max (kPa)", "Value": res.get("sigma_max"), "Criteria": f"≤ {inputs.get('q_allow')}", "Status": _ok(res.get("sigma_max"), inputs.get('q_allow'), "<=")},
+            {"Check": "f_min (kPa)", "Value": res.get("sigma_min"), "Criteria": "≥ 0", "Status": _ok(res.get("sigma_min"), 0.0, ">=")},
+            {"Check": "e_base (m)", "Value": res.get("e_base"), "Criteria": f"≤ B/6 = {res.get('kern')}", "Status": _ok(res.get("e_base"), res.get("kern"), "<=")},
+            {"Check": "b_contact (m)", "Value": res.get("b_contact"), "Criteria": "", "Status": ""},
+        ])
+
+        # Vertical loads table (exact)
+        df_vertical = res.get("df_vertical", pd.DataFrame())
+
+        # Outputs table (exact) - same construction as UI below
         keys = [
-        "B","H_active","alpha","i","Ka","Kp_full","Kp_reduced","H_front",
-        "P_H","P_V","Pp","R_total","M_stab","x_R","e_load",
-        "M_ot","M_net","e_base","kern","b_contact",
-        "sigma_max","sigma_min","FS_ot","FS_sl"
+            "B","H_active","alpha","i","Ka","Kp_full","Kp_reduced","H_front",
+            "P_H","P_V","Pp","R_total","M_stab","x_R","e_load",
+            "M_ot","M_net","e_base","kern","b_contact",
+            "sigma_max","sigma_min","FS_ot","FS_sl"
         ]
-
         UNITS = {
-        "B": "m",
-        "H_active": "m",
-        "H_front": "m",
-        "alpha": "deg",
-        "i": "deg",
-        "Ka": "-",
-        "Kp_full": "-",
-        "Kp_reduced": "-",
-        "P_H": "kN/m",
-        "P_V": "kN/m",
-        "Pp": "kN/m",
-        "R_total": "kN/m",
-        "M_stab": "kN·m/m",
-        "M_ot": "kN·m/m",
-        "M_net": "kN·m/m",
-        "x_R": "m",
-        "e_load": "m",
-        "e_base": "m",
-        "kern": "m",
-        "b_contact": "m",
-        "sigma_max": "kPa",
-        "sigma_min": "kPa",
-        "FS_ot": "-",
-        "FS_sl": "-"
+            "B": "m","H_active": "m","H_front": "m","alpha": "deg","i": "deg",
+            "Ka": "-","Kp_full": "-","Kp_reduced": "-",
+            "P_H": "kN/m","P_V": "kN/m","Pp": "kN/m","R_total": "kN/m",
+            "M_stab": "kN·m/m","M_ot": "kN·m/m","M_net": "kN·m/m",
+            "x_R": "m","e_load": "m","e_base": "m","kern": "m","b_contact": "m",
+            "sigma_max": "kPa","sigma_min": "kPa","FS_ot": "-","FS_sl": "-"
         }
-
-    # چیزی که در ستون Symbol نمایش داده می‌شود
         SYMBOL = {
-        "sigma_max": "f_max",
-        "sigma_min": "f_min",
-        "FS_ot": "FS_overturning",
-        "FS_sl": "FS_sliding",
-        "alpha": "α",
-        "M_stab": "M_stabilizing",
-        "M_ot": "M_overturning",
-        "P_H": "Pa_H",
-        "P_V": "Pa_V",
+            "sigma_max": "f_max","sigma_min": "f_min",
+            "FS_ot": "FS_overturning","FS_sl": "FS_sliding",
+            "alpha": "α","M_stab": "M_stabilizing","M_ot": "M_overturning",
+            "P_H": "Pa_H","P_V": "Pa_V",
         }
-
-    # توضیح خوانا برای کاربر
         DESC = {
-        "B": "Footing width",
-        "H_active": "Height of active pressure",
-        "H_front": "Front soil height",
-        "alpha": "Backface batter angle from horizontal",
-        "i": "Backface batter angle from vertical",
-        "Ka": "Active earth pressure coefficient",
-        "Kp_full": "Passive coefficient (full)",
-        "Kp_reduced": "Passive coefficient (reduced)",
-        "P_H": "Resultant horizontal earth force",
-        "P_V": "Resultant vertical earth force",
-        "Pp": "Passive resultant force",
-        "R_total": "Total vertical load",
-        "M_stab": "Stabilizing moment",
-        "M_ot": "Overturning moment",
-        "M_net": "Net bending moment at the base",
-        "x_R": "Resultant location from toe",
-        "e_load": "Eccentricity of loads",
-        "e_base": "Base eccentricity",
-        "kern": "Middle third (kernel) limit",
-        "b_contact": "Contact length",
-        "sigma_max": "Maximum bearing pressure",
-        "sigma_min": "Minimum bearing pressure",
-        "FS_ot": "Factor of safety against overturning",
-        "FS_sl": "Factor of safety against sliding",
+            "B": "Footing width","H_active": "Height of active pressure","H_front": "Front soil height",
+            "alpha": "Backface batter angle from horizontal","i": "Backface batter angle from vertical",
+            "Ka": "Active earth pressure coefficient","Kp_full": "Passive coefficient (full)","Kp_reduced": "Passive coefficient (reduced)",
+            "P_H": "Resultant horizontal earth force","P_V": "Resultant vertical earth force","Pp": "Passive resultant force",
+            "R_total": "Total vertical load","M_stab": "Stabilizing moment","M_ot": "Overturning moment","M_net": "Net bending moment at the base",
+            "x_R": "Resultant location from toe","e_load": "Eccentricity of loads","e_base": "Base eccentricity","kern": "Middle third (kernel) limit",
+            "b_contact": "Contact length","sigma_max": "Maximum bearing pressure","sigma_min": "Minimum bearing pressure",
+            "FS_ot": "Factor of safety against overturning","FS_sl": "Factor of safety against sliding",
         }
-
-        dbg = pd.DataFrame({
-        "Symbol": [SYMBOL.get(k, k) for k in keys],
-        "Description": [DESC.get(k, "") for k in keys],
-        "Unit": [UNITS.get(k, "") for k in keys],
-        "Value": [res.get(k) for k in keys],
+        df_outputs = pd.DataFrame({
+            "Symbol": [SYMBOL.get(k, k) for k in keys],
+            "Description": [DESC.get(k, "") for k in keys],
+            "Unit": [UNITS.get(k, "") for k in keys],
+            "Value": [res.get(k) for k in keys],
         })
 
-        st_scrollable_table(dbg, height_px=360)
+        st.session_state.pdf_bytes = build_pdf_bytes(
+            title="Retaining Wall Report",
+            inputs_display=inputs_display,
+            df_summary=df_summary,
+            df_checks=df_checks,
+            df_vertical=df_vertical,
+            df_outputs=df_outputs,
+            schematic_png=schem_png,
+        )
+
+        if st.session_state.pdf_bytes:
+            st.sidebar.download_button(
+                "Download PDF report",
+                data=st.session_state.pdf_bytes,
+                file_name="retaining_wall_report.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+            )
+
+
+    # ---- Display results after analysis (Run analysis OR Create PDF) ----
+    if st.session_state.analysis_ran and st.session_state.res:
+        res = st.session_state.res
+        # Top metrics
+        r1,r2,r3,r4 = st.columns(4)
+        r1.metric("B (m)", f"{res['B']:.3f}")
+        r2.metric("H_active (m)", f"{res['H_active']:.3f}")
+        r3.metric("Ka", f"{res['Ka']:.6f}")
+        r4.metric("Kp_full", f"{res['Kp_full']:.3f}")
+
+        r5,r6,r7,r8 = st.columns(4)
+        r5.metric("Pa_H (kN/m)", f"{res['P_H']:.3f}")
+        r6.metric("Pa_V (kN/m)", f"{res['P_V']:.3f}")
+        r7.metric("Pp (kN/m)", f"{res['Pp']:.3f}")
+        r8.metric("R_total (kN/m)", f"{res['R_total']:.3f}")
+
+        st.divider()
+
+        left, right = st.columns([1.25, 1.0])
+
+        with left:
+            st.subheader("Wall Schematic")
+            fig = draw_schematic_clean(res, mode=mode, show_pressures=show_pressures, show_dims=show_dims)
+            st.pyplot(fig, use_container_width=True)
+
+        with right:
+            st.subheader("Stability Checks")
+            c1,c2 = st.columns(2)
+            c1.metric("FS_sliding", f"{res['FS_sl']:.3f}", "OK ✅" if res["FS_sl"] >= 1.5 else "NOT OK ❌")
+            c2.metric("FS_overturning", f"{res['FS_ot']:.3f}", "OK ✅" if res["FS_ot"] >= 2.0 else "NOT OK ❌")
+
+            st.divider()
+            b1,b2 = st.columns(2)
+            b1.metric("f_max (kPa)", f"{res['sigma_max']:.1f}", "OK ✅" if res["sigma_max"] <= res["q_allow"] else "NOT OK ❌")
+            b2.metric("f_min (kPa)", f"{res['sigma_min']:.1f}", "OK ✅" if res["sigma_min"] >= 0 else "NOT OK ❌")
+
+            st.caption(f"b_contact = {res['b_contact']:.3f} m  |  B/6 = {res['kern']:.3f} m")
+            st.divider()
+            d1,d2 = st.columns(2)
+            d1.metric("x_R (m from toe)", f"{res['x_R']:.3f}")
+            d2.metric("e_base (m)", f"{res['e_base']:.3f}", "OK ✅" if res["e_base"] <= res["kern"] else "NOT OK ❌")
+
+        st.divider()
+        st.subheader("Vertical Loads Breakdown")
+        st_scrollable_table(res["df_vertical"], height_px=260)
+            
+        st.subheader("Outputs")
+        with st.expander("", expanded=True):
+            keys = [
+            "B","H_active","alpha","i","Ka","Kp_full","Kp_reduced","H_front",
+            "P_H","P_V","Pp","R_total","M_stab","x_R","e_load",
+            "M_ot","M_net","e_base","kern","b_contact",
+            "sigma_max","sigma_min","FS_ot","FS_sl"
+            ]
+
+            UNITS = {
+            "B": "m",
+            "H_active": "m",
+            "H_front": "m",
+            "alpha": "deg",
+            "i": "deg",
+            "Ka": "-",
+            "Kp_full": "-",
+            "Kp_reduced": "-",
+            "P_H": "kN/m",
+            "P_V": "kN/m",
+            "Pp": "kN/m",
+            "R_total": "kN/m",
+            "M_stab": "kN·m/m",
+            "M_ot": "kN·m/m",
+            "M_net": "kN·m/m",
+            "x_R": "m",
+            "e_load": "m",
+            "e_base": "m",
+            "kern": "m",
+            "b_contact": "m",
+            "sigma_max": "kPa",
+            "sigma_min": "kPa",
+            "FS_ot": "-",
+            "FS_sl": "-"
+            }
+
+        # چیزی که در ستون Symbol نمایش داده می‌شود
+            SYMBOL = {
+            "sigma_max": "f_max",
+            "sigma_min": "f_min",
+            "FS_ot": "FS_overturning",
+            "FS_sl": "FS_sliding",
+            "alpha": "α",
+            "M_stab": "M_stabilizing",
+            "M_ot": "M_overturning",
+            "P_H": "Pa_H",
+            "P_V": "Pa_V",
+            }
+
+        # توضیح خوانا برای کاربر
+            DESC = {
+            "B": "Footing width",
+            "H_active": "Height of active pressure",
+            "H_front": "Front soil height",
+            "alpha": "Backface batter angle from horizontal",
+            "i": "Backface batter angle from vertical",
+            "Ka": "Active earth pressure coefficient",
+            "Kp_full": "Passive coefficient (full)",
+            "Kp_reduced": "Passive coefficient (reduced)",
+            "P_H": "Resultant horizontal earth force",
+            "P_V": "Resultant vertical earth force",
+            "Pp": "Passive resultant force",
+            "R_total": "Total vertical load",
+            "M_stab": "Stabilizing moment",
+            "M_ot": "Overturning moment",
+            "M_net": "Net bending moment at the base",
+            "x_R": "Resultant location from toe",
+            "e_load": "Eccentricity of loads",
+            "e_base": "Base eccentricity",
+            "kern": "Middle third (kernel) limit",
+            "b_contact": "Contact length",
+            "sigma_max": "Maximum bearing pressure",
+            "sigma_min": "Minimum bearing pressure",
+            "FS_ot": "Factor of safety against overturning",
+            "FS_sl": "Factor of safety against sliding",
+            }
+
+            dbg = pd.DataFrame({
+            "Symbol": [SYMBOL.get(k, k) for k in keys],
+            "Description": [DESC.get(k, "") for k in keys],
+            "Unit": [UNITS.get(k, "") for k in keys],
+            "Value": [res.get(k) for k in keys],
+            })
+
+            st_scrollable_table(dbg, height_px=360)
 
 
 if __name__ == "__main__":
