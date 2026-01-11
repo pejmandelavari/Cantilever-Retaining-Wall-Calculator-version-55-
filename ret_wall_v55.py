@@ -6,6 +6,24 @@ import math
 import numpy as np
 import pandas as pd
 import streamlit as st
+st.markdown("""
+<style>
+/* Remove bottom margin from all sidebar widgets */
+section[data-testid="stSidebar"] .stNumberInput,
+section[data-testid="stSidebar"] .stSlider,
+section[data-testid="stSidebar"] .stSelectbox,
+section[data-testid="stSidebar"] .stTextInput,
+section[data-testid="stSidebar"] .stMarkdown {
+    margin-bottom: 0rem !important;
+}
+
+/* Move buttons closer to inputs */
+section[data-testid="stSidebar"] .stButton {
+    margin-top: 0.5rem !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # --- Display formatting ---
 pd.options.display.float_format = "{:.3f}".format
 
