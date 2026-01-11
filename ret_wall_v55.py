@@ -530,7 +530,6 @@ def main():
 
     st.divider()
     st.subheader("Vertical Loads Breakdown")
-    with st.expander("", expanded=True):
     st_scrollable_table(res["df_vertical"], height_px=260)
             
     st.subheader("Outputs")
